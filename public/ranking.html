@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#12052b">
+  <title>Corny · Mais cortados</title>
+  <link rel="preload" href="/fonts/lilita-one-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body class="ranking-page">
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="/game" aria-label="Corny">
+        <span class="logo-tile" aria-hidden="true">
+          <svg class="icon"><use href="/img/icons.svg#corn"></use></svg>
+        </span>
+        <span class="brand-text">
+          <span class="wordmark">Cor<span class="two">ny</span></span>
+          <span class="brand-sub">Cortar o mal pela raiz</span>
+        </span>
+      </a>
+      <div class="topbar-actions">
+        <button class="icon-btn is-purple" id="adminBtn" type="button" aria-label="Painel admin" title="Painel admin" style="display: none;">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#gear"></use></svg>
+        </button>
+        <button class="icon-btn is-pink" id="closeBtn" type="button" aria-label="Fechar ranking" title="Fechar">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#close"></use></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="ranking-panel">
+      <div class="ranking-header">
+        <h1 id="rankingTitle">Mais cortados</h1>
+        <p id="rankingSubtitle">Quem mais foi cortado pela raiz</p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Qual ranking">
+        <button class="ranking-tab active" id="globalTab" type="button" role="tab" aria-selected="true">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#globe"></use></svg>
+          Geral
+        </button>
+        <button class="ranking-tab" id="personalTab" type="button" role="tab" aria-selected="false">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#user"></use></svg>
+          Meus cortes
+        </button>
+      </div>
+
+      <div class="ranking-scroll">
+        <ol class="ranking-list" id="rankingList"></ol>
+        <div id="emptyMessage" class="empty-ranking" style="display: none;"></div>
+      </div>
+
+      <div>
+        <button class="btn-secondary" id="backBtn" type="button">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#back"></use></svg>
+          Voltar ao jogo
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="/js/pages/ranking.js"></script>
+</body>
+</html>

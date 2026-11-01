@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#12052b">
+  <title>Corny · Admin</title>
+  <link rel="preload" href="/fonts/lilita-one-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body class="admin-page">
+  <div class="app app-wide">
+    <header class="topbar">
+      <a class="brand" href="/admin" aria-label="Corny">
+        <span class="logo-tile" aria-hidden="true">
+          <svg class="icon"><use href="/img/icons.svg#corn"></use></svg>
+        </span>
+        <span class="brand-text">
+          <span class="wordmark">Cor<span class="two">ny</span></span>
+          <span class="brand-sub">Cortar o mal pela raiz</span>
+        </span>
+        <span class="brand-tag">Admin</span>
+      </a>
+      <div class="topbar-actions">
+        <button class="icon-btn is-purple" id="rankingBtn" type="button" aria-label="Mais cortados" title="Mais cortados">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#trophy"></use></svg>
+        </button>
+        <button class="icon-btn is-pink" id="logoutBtn" type="button" aria-label="Sair" title="Sair">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#logout"></use></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <!-- Busca -->
+      <section class="panel">
+        <h2>
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#search"></use></svg>
+          Buscar e adicionar
+        </h2>
+        <div class="search-form">
+          <label for="searchInput" class="visually-hidden">Nomes para buscar</label>
+          <input type="search" id="searchInput" placeholder="Nome (português ou inglês). Use ; para buscar vários">
+          <button class="btn-primary" id="searchBtn" type="button">Buscar</button>
+        </div>
+        <div id="message" class="message" role="status"></div>
+        <div id="imagePreviewContainer" style="display: none;">
+          <div id="imagePreviewGrid" class="results-grid"></div>
+        </div>
+      </section>
+
+      <!-- Adição manual -->
+      <section class="panel">
+        <h2>
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#upload"></use></svg>
+          Adicionar manualmente
+        </h2>
+        <div class="form-grid">
+          <div>
+            <label for="manualName">Nome</label>
+            <input type="text" id="manualName" placeholder="Ex.: Xuxa Meneghel">
+          </div>
+          <div>
+            <label for="manualImageUrl">URL da imagem</label>
+            <input type="url" id="manualImageUrl" placeholder="https://exemplo.com/foto.jpg">
+          </div>
+          <div>
+            <span class="label">Ou envie um arquivo</span>
+            <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Enviar arquivo de imagem">
+              <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#upload"></use></svg>
+              <p>Arraste uma imagem aqui ou clique para escolher</p>
+            </div>
+            <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+          </div>
+          <div id="manualPreview" class="manual-preview" style="display: none;">
+            <img id="manualPreviewImg" alt="Prévia da imagem">
+          </div>
+          <div id="manualMessage" class="message" role="status"></div>
+          <button class="btn-primary" id="addManualBtn" type="button">Adicionar</button>
+        </div>
+      </section>
+
+      <!-- Cadastradas -->
+      <section class="panel">
+        <h2>
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#sprout"></use></svg>
+          <span>Cadastradas (<span id="totalCount">0</span>)</span>
+        </h2>
+        <div class="celebrities-grid" id="celebritiesGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="/js/pages/admin.js"></script>
+</body>
+</html>

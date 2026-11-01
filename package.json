@@ -1,0 +1,26 @@
+{
+  "name": "corny",
+  "version": "2.0.0",
+  "description": "Corny: cortar o mal pela raiz. Jogo de eliminação \"quem fica?\" com celebridades, otimizado para celular",
+  "type": "module",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch server.js",
+    "test": "node --disable-warning=ExperimentalWarning --test"
+  },
+  "keywords": [
+    "game",
+    "mobile",
+    "elimination"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sharp": "^0.34.5"
+  }
+}

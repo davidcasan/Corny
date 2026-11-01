@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#12052b">
+  <title>Corny</title>
+  <link rel="preload" href="/fonts/lilita-one-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body class="game-page">
+  <div class="mosaic-background" id="mosaicBg" aria-hidden="true"></div>
+
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="/game" aria-label="Corny, início">
+        <span class="logo-tile" aria-hidden="true">
+          <svg class="icon"><use href="/img/icons.svg#corn"></use></svg>
+        </span>
+        <span class="brand-text">
+          <span class="wordmark">Cor<span class="two">ny</span></span>
+          <span class="brand-sub">Fazendo uma limpa no jardim</span>
+        </span>
+      </a>
+
+      <div class="progress-box" id="progressBox" style="display: none;">
+        <span class="progress-label">Progresso</span>
+        <p class="round-label" aria-live="polite">Duelo <span id="currentRound">1</span> de <span id="totalRounds">10</span></p>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="icon-btn is-cyan" id="soundBtn" type="button" aria-label="Som ligado" title="Som" aria-pressed="false">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#sound-on"></use></svg>
+        </button>
+        <button class="icon-btn is-purple" id="rankingBtn" type="button" aria-label="Mais cortados" title="Mais cortados">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#trophy"></use></svg>
+        </button>
+        <button class="icon-btn is-yellow" id="fullscreenBtn" type="button" aria-label="Tela cheia" title="Tela cheia">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#fullscreen"></use></svg>
+        </button>
+        <button class="icon-btn is-pink" id="logoutBtn" type="button" aria-label="Sair" title="Sair">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#logout"></use></svg>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Tela inicial -->
+      <section class="start-screen" id="startScreen">
+        <div class="hero-art" aria-hidden="true">
+          <svg class="icon spark spark-1"><use href="/img/icons.svg#sparkle"></use></svg>
+          <svg class="icon sprout"><use href="/img/icons.svg#sprout"></use></svg>
+          <svg class="icon shears"><use href="/img/icons.svg#shears"></use></svg>
+          <svg class="icon spark spark-2"><use href="/img/icons.svg#sparkle"></use></svg>
+        </div>
+        <p class="greeting">E aí, <strong id="username"></strong></p>
+        <h1 class="hero-title">Uma bela poda<br><em>no jardim</em></h1>
+        <p class="lead">11 famosos, 10 duelos. Em cada um, escolha quem você quer <strong class="cut-word">podar</strong>: o outro <strong class="save-word">se salva</strong>. Quem você escolher até o fim é cortado pela raiz e entra no ranking dos mais podados.</p>
+        <button class="btn-primary btn-big" id="startGameBtn" type="button">
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#shears"></use></svg>
+          <span class="btn-label">Começar a poda</span>
+        </button>
+        <div id="startMessage" class="message" role="status"></div>
+      </section>
+
+      <!-- Partida -->
+      <section class="game-screen" id="gameScreen" aria-label="Partida">
+        <div class="duel-banner">
+          <p class="sticker">
+            <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#shears"></use></svg>
+            Selecione quem precisa de uma poda.
+          </p>
+        </div>
+        <div class="duel-stage">
+          <div class="duel-container" id="duelContainer"></div>
+          <div class="vs-badge" aria-hidden="true">VS</div>
+        </div>
+        <p class="duel-hint">Quem você não escolher <strong>se salva</strong>.</p>
+      </section>
+
+      <!-- Fim: quem foi cortado pela raiz -->
+      <section class="winner-screen" id="winnerScreen" aria-live="polite">
+        <p class="sticker">Fim da poda</p>
+        <h2 class="winner-title">Podado!</h2>
+        <div id="winnerCard"></div>
+        <p class="winner-standing" id="rankingPosition"></p>
+        <div class="winner-actions">
+          <button class="btn-primary btn-big" id="playAgainBtn" type="button">
+            <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#shears"></use></svg>
+            Podar de novo
+          </button>
+          <button class="btn-secondary" id="viewRankingBtn" type="button">
+            <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#trophy"></use></svg>
+            Mais podados
+          </button>
+          <button class="btn-ghost" id="exitBtn" type="button">Voltar ao início</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="leaf-rain" id="leafRain" aria-hidden="true"></div>
+
+  <script type="module" src="/js/pages/game.js"></script>
+</body>
+</html>

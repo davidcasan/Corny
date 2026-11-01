@@ -1,0 +1,14 @@
+node_modules/
+.env
+.DS_Store
+tools/
+tunnel.log
+URL_PUBLICA.txt
+*.db.bak-*
+*.db-journal
+data/
+logs/
+ngrok.log
+cancer2000.db
+*.db-wal
+*.db-shm

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#12052b">
+  <title>Corny</title>
+  <link rel="preload" href="/fonts/lilita-one-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body class="login-page">
+  <button class="icon-btn is-yellow corner-btn" id="fullscreenBtnLogin" type="button" aria-label="Tela cheia" title="Tela cheia">
+    <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#fullscreen"></use></svg>
+  </button>
+
+  <main class="login-wrap">
+    <div class="login-hero">
+      <span class="logo-tile logo-tile-big" aria-hidden="true">
+        <svg class="icon"><use href="/img/icons.svg#corn"></use></svg>
+      </span>
+      <h1 class="logo-word">Cor<span class="two">ny</span></h1>
+      <p class="sticker">
+        <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#shears"></use></svg>
+        Cortar o mal pela raiz
+      </p>
+    </div>
+
+    <form class="login-card" id="loginForm" novalidate>
+      <div>
+        <label for="username">Nome</label>
+        <input type="text" id="username" autocomplete="username" maxlength="30" required>
+      </div>
+      <div>
+        <label for="password">Senha</label>
+        <input type="password" id="password" autocomplete="current-password" required>
+      </div>
+      <button id="loginBtn" class="btn-primary btn-big" type="submit">Entrar</button>
+      <p class="info-text">Primeira vez? Escolha um nome e uma senha: a conta é criada na hora.</p>
+      <div id="message" class="message" role="status"></div>
+    </form>
+  </main>
+
+  <script type="module" src="/js/pages/login.js"></script>
+</body>
+</html>
