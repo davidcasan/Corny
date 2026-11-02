@@ -24,6 +24,7 @@ export function adminRoutes(db, { searchImages = defaultSearch, celebrityImages 
   const updateFocal = db.prepare(`
     UPDATE celebrities SET focal_x = ?, focal_y = ?, focal_zoom = ? WHERE id = ? AND deleted_at IS NULL
   `);
+  const updateName = db.prepare('UPDATE celebrities SET name = ? WHERE id = ? AND deleted_at IS NULL');
 
   const present = row => ({
     id: row.id,
@@ -99,6 +100,27 @@ export function adminRoutes(db, { searchImages = defaultSearch, celebrityImages 
       return res.status(404).json({ success: false, message: 'Celebridade não encontrada' });
     }
     res.json({ success: true, ...focal });
+  });
+
+  // Renomear: mesmo cuidado com duplicatas do cadastro (ignora acentos e maiúsculas)
+  router.put('/celebrity/:id/name', (req, res) => {
+    const id = parseId(req.params.id);
+    const name = cleanText(req.body?.name, MAX_NAME_LENGTH);
+    if (!id || !name) {
+      return res.status(400).json({ success: false, message: 'Nome é obrigatório' });
+    }
+
+    const key = normalizeName(name);
+    const duplicate = listActive.all().find(c => c.id !== id && normalizeName(c.name) === key);
+    if (duplicate) {
+      return res.status(409).json({ success: false, message: `${duplicate.name} já está cadastrado(a)` });
+    }
+
+    const { changes } = updateName.run(name, id);
+    if (changes === 0) {
+      return res.status(404).json({ success: false, message: 'Celebridade não encontrada' });
+    }
+    res.json({ success: true, name });
   });
 
   router.delete('/celebrity/:id', (req, res) => {

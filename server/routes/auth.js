@@ -12,7 +12,8 @@ export function authRoutes(db) {
   const router = express.Router();
   const limiter = createRateLimiter({ maxAttempts: 10, windowMs: 10 * 60 * 1000 });
 
-  const findUser = db.prepare('SELECT * FROM users WHERE username = ?');
+  // "david" entra na conta "David": o nome não diferencia maiúsculas (e o banco não aceita os dois)
+  const findUser = db.prepare('SELECT * FROM users WHERE username = ? COLLATE NOCASE');
   const insertUser = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
   const updatePassword = db.prepare('UPDATE users SET password = ? WHERE id = ?');
 

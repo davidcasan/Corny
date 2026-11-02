@@ -1,12 +1,39 @@
 import { api } from '../api.js';
 import { applyFraming, celebImage, el, focalOf, hide, show, showMessage } from '../dom.js';
+import { openFormDialog } from '../admin/dialog.js';
 import { openFocalEditor } from '../admin/focal-editor.js';
+import { initUsersTab } from '../admin/users.js';
+import { searchKey } from '../format.js';
 import { plural } from '../game/state.js';
 import { logout, requireLogin } from '../session.js';
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+const MAX_NAME_LENGTH = 80;
 
 await requireLogin({ admin: true });
+
+// ==================== ABAS ====================
+
+const TABS = {
+  personalidades: { button: document.getElementById('celebsTabBtn'), panel: document.getElementById('celebsTab') },
+  jogadores: { button: document.getElementById('usersTabBtn'), panel: document.getElementById('usersTab') }
+};
+
+function showTab(name) {
+  for (const [key, tab] of Object.entries(TABS)) {
+    const active = key === name;
+    tab.button.classList.toggle('active', active);
+    tab.button.setAttribute('aria-selected', String(active));
+    tab.panel.style.display = active ? '' : 'none';
+  }
+  if (name === 'jogadores') initUsersTab();
+  history.replaceState(null, '', `#${name}`);
+}
+
+for (const [name, tab] of Object.entries(TABS)) {
+  tab.button.addEventListener('click', () => showTab(name));
+}
+showTab(location.hash === '#jogadores' ? 'jogadores' : 'personalidades');
 
 const searchInput = document.getElementById('searchInput');
 const searchBtn = document.getElementById('searchBtn');
@@ -281,28 +308,52 @@ async function addFromSearch(result, button) {
 
 // ==================== CADASTRADAS ====================
 
+const celebsFilter = document.getElementById('celebsFilter');
+const celebsFilterInfo = document.getElementById('celebsFilterInfo');
+const noMatch = el('p', { className: 'empty-ranking' }, 'Nenhuma personalidade com esse nome.');
+let listed = []; // { celeb, item }: os cards são criados uma vez e o filtro só mostra/esconde
+
+celebsFilter.addEventListener('input', applyCelebsFilter);
+
 async function loadCelebrities() {
   try {
     const { celebrities } = await api('/api/admin/celebrities');
     totalCount.textContent = celebrities.length;
 
     if (celebrities.length === 0) {
+      listed = [];
       celebritiesGrid.replaceChildren(el('p', { className: 'empty-ranking' }, 'Nenhuma celebridade cadastrada ainda.'));
       return;
     }
 
-    celebritiesGrid.replaceChildren(...celebrities.map(celebrityItem));
+    listed = celebrities.map(celeb => ({ celeb, item: celebrityItem(celeb) }));
+    celebritiesGrid.replaceChildren(...listed.map(entry => entry.item), noMatch);
+    applyCelebsFilter();
   } catch (err) {
     showMessage(messageDiv, `❌ Erro ao carregar celebridades: ${err.message}`, 'error');
   }
 }
 
+// Busca pelo nome, ignorando acentos e maiúsculas
+function applyCelebsFilter() {
+  const query = searchKey(celebsFilter.value.trim());
+  let visible = 0;
+  for (const { celeb, item } of listed) {
+    const match = !query || searchKey(celeb.name).includes(query);
+    item.style.display = match ? '' : 'none';
+    if (match) visible++;
+  }
+  noMatch.style.display = query && visible === 0 ? '' : 'none';
+  celebsFilterInfo.textContent = query ? `Mostrando ${visible} de ${listed.length}` : '';
+}
+
 function celebrityItem(celeb) {
   const image = celebImage(celeb, { loading: 'lazy', sizes: '200px' });
+  const title = el('h4', {}, celeb.name);
 
   return el('div', { className: 'celebrity-item' },
     image,
-    el('h4', {}, celeb.name),
+    title,
     el('p', { className: 'wins' }, `Cortado ${plural(celeb.wins, 'vez', 'vezes')}`),
     !celeb.image_stored && el('p', {
       className: 'image-badge',
@@ -312,9 +363,26 @@ function celebrityItem(celeb) {
       className: 'image-badge',
       title: `${celeb.image_width}×${celeb.image_height}: pode ficar borrada no jogo`
     }, '📉 imagem pequena'),
+    el('button', { className: 'btn-secondary btn-small', onClick: () => renameCelebrity(celeb, title) }, 'Renomear'),
     el('button', { className: 'btn-secondary btn-small', onClick: () => editFocal(celeb, image) }, 'Enquadrar'),
     el('button', { className: 'btn-delete', onClick: () => deleteCelebrity(celeb) }, 'Excluir')
   );
+}
+
+async function renameCelebrity(celeb, title) {
+  const saved = await openFormDialog({
+    title: `Renomear ${celeb.name}`,
+    hint: 'O nome novo aparece no jogo, no ranking e no histórico de partidas.',
+    fields: [{ name: 'name', label: 'Nome', value: celeb.name, maxLength: MAX_NAME_LENGTH }],
+    onSubmit: (values) => api(`/api/admin/celebrity/${celeb.id}/name`, { method: 'PUT', body: { name: values.name } })
+  });
+  if (!saved) return;
+
+  const oldName = celeb.name;
+  celeb.name = saved.name;
+  title.textContent = saved.name;
+  applyCelebsFilter();
+  showMessage(messageDiv, `✅ ${oldName} agora se chama ${saved.name}`);
 }
 
 // Mesmo limite do aviso do servidor (MIN_RECOMMENDED_SIDE em server/images.js)

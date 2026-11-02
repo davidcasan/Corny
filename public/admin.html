@@ -32,7 +32,18 @@
       </div>
     </header>
 
-    <main class="admin-main">
+    <nav class="tabs admin-tabs" role="tablist" aria-label="Seções do admin">
+      <button class="ranking-tab active" id="celebsTabBtn" type="button" role="tab" aria-selected="true" aria-controls="celebsTab">
+        <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#sprout"></use></svg>
+        Personalidades
+      </button>
+      <button class="ranking-tab" id="usersTabBtn" type="button" role="tab" aria-selected="false" aria-controls="usersTab">
+        <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#user"></use></svg>
+        Jogadores
+      </button>
+    </nav>
+
+    <main class="admin-main" id="celebsTab" role="tabpanel" aria-labelledby="celebsTabBtn">
       <!-- Busca -->
       <section class="panel">
         <h2>
@@ -87,7 +98,52 @@
           <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#sprout"></use></svg>
           <span>Cadastradas (<span id="totalCount">0</span>)</span>
         </h2>
+        <div class="users-toolbar">
+          <label for="celebsFilter" class="visually-hidden">Buscar personalidade cadastrada</label>
+          <input type="search" id="celebsFilter" placeholder="Buscar pelo nome">
+        </div>
+        <p class="field-help" id="celebsFilterInfo"></p>
         <div class="celebrities-grid" id="celebritiesGrid"></div>
+      </section>
+    </main>
+
+    <main class="admin-main" id="usersTab" role="tabpanel" aria-labelledby="usersTabBtn" style="display: none;">
+      <!-- Novo jogador -->
+      <section class="panel">
+        <h2>
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#user"></use></svg>
+          Novo jogador
+        </h2>
+        <form class="new-user-form" id="createUserForm" novalidate>
+          <div>
+            <label for="newUserName">Nome</label>
+            <input type="text" id="newUserName" maxlength="30" autocomplete="off">
+          </div>
+          <div>
+            <label for="newUserPassword">Senha</label>
+            <input type="password" id="newUserPassword" autocomplete="new-password">
+          </div>
+          <label class="check-row" for="newUserAdmin">
+            <input type="checkbox" id="newUserAdmin">
+            <span>Pode acessar o painel admin</span>
+          </label>
+          <button class="btn-primary" id="createUserBtn" type="submit">Criar</button>
+        </form>
+        <div id="usersMessage" class="message" role="status"></div>
+      </section>
+
+      <!-- Lista -->
+      <section class="panel">
+        <h2>
+          <svg class="icon" aria-hidden="true"><use href="/img/icons.svg#trophy"></use></svg>
+          <span>Jogadores (<span id="usersCount">0</span>)</span>
+        </h2>
+        <div class="users-toolbar">
+          <label for="usersFilter" class="visually-hidden">Filtrar jogadores</label>
+          <input type="search" id="usersFilter" placeholder="Filtrar por nome">
+        </div>
+        <p class="field-help">As senhas ficam guardadas criptografadas: dá para definir uma nova em "Editar", mas não para ver a atual.</p>
+        <div class="users-list" id="usersList"></div>
       </section>
     </main>
   </div>

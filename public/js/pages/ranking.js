@@ -1,5 +1,6 @@
 import { api } from '../api.js';
 import { celebImage, el, hide, show } from '../dom.js';
+import { formatDate } from '../format.js';
 import { plural } from '../game/state.js';
 import { homeFor, requireLogin } from '../session.js';
 
@@ -105,11 +106,4 @@ function rankingItem({ position, rankClass = '', celeb, detail, level }) {
       meter
     )
   );
-}
-
-// SQLite grava em UTC sem fuso ("2026-02-19 13:45:00")
-function formatDate(sqliteDate) {
-  return new Date(`${sqliteDate.replace(' ', 'T')}Z`).toLocaleDateString('pt-BR', {
-    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-  });
 }

@@ -70,6 +70,21 @@ async function loggedIn(username, password = 'senha123') {
 }
 
 describe('login', () => {
+  it('nome não diferencia maiúsculas: entra na conta existente e não cria outra', async () => {
+    await client(baseUrl)('POST', '/api/login', { username: 'Maiuscula', password: 'abc' });
+    const same = await client(baseUrl)('POST', '/api/login', { username: 'maiuscula', password: 'abc' });
+    assert.equal(same.status, 200);
+    assert.equal(same.data.newUser, false);
+    assert.equal(same.data.user.username, 'Maiuscula');
+    assert.equal((await client(baseUrl)('POST', '/api/login', { username: 'MAIUSCULA', password: 'errada' })).status, 401);
+    assert.equal(db.prepare("SELECT COUNT(*) AS n FROM users WHERE lower(username) = 'maiuscula'").get().n, 1);
+  });
+
+  it('o banco recusa dois nomes que só mudam em maiúsculas', () => {
+    db.prepare("INSERT INTO users (username, password) VALUES ('Unico', 'x')").run();
+    assert.throws(() => db.prepare("INSERT INTO users (username, password) VALUES ('UNICO', 'x')").run(), /UNIQUE/);
+  });
+
   it('cria a conta no primeiro acesso e depois exige a mesma senha', async () => {
     const first = await client(baseUrl)('POST', '/api/login', { username: 'maria', password: 'abc' });
     assert.equal(first.data.newUser, true);
@@ -300,6 +315,122 @@ describe('ranking', () => {
   });
 });
 
+describe('admin: jogadores', () => {
+  it('só admin acessa', async () => {
+    assert.equal((await client(baseUrl)('GET', '/api/admin/users')).status, 401);
+    const player = await loggedIn('curioso');
+    assert.equal((await player('GET', '/api/admin/users')).status, 403);
+    assert.equal((await player('PUT', '/api/admin/users/1', { password: 'x' })).status, 403);
+  });
+
+  it('lista jogadores com partidas e marca senha antiga', async () => {
+    db.prepare("INSERT INTO users (username, password) VALUES ('legado_lista', 'texto-puro')").run();
+    const admin = await loggedIn('admin', 'senha-admin');
+    const { users } = (await admin('GET', '/api/admin/users')).data;
+    const legacy = users.find(u => u.username === 'legado_lista');
+    assert.equal(legacy.legacyPassword, true);
+    assert.equal(legacy.games, 0);
+    assert.equal(users.find(u => u.username === 'admin').isAdmin, true);
+    assert.ok(users.every(u => !('password' in u)), 'a senha nunca sai na resposta');
+  });
+
+  it('cria jogador e recusa nome repetido (sem diferenciar maiúsculas)', async () => {
+    const admin = await loggedIn('admin', 'senha-admin');
+    const created = await admin('POST', '/api/admin/users', { username: 'Novato', password: 'abc123' });
+    assert.equal(created.status, 200);
+    assert.equal(created.data.user.isAdmin, false);
+    assert.equal((await admin('POST', '/api/admin/users', { username: 'novato', password: 'x' })).status, 409);
+    assert.equal((await admin('POST', '/api/admin/users', { username: '', password: 'x' })).status, 400);
+
+    const login = await client(baseUrl)('POST', '/api/login', { username: 'Novato', password: 'abc123' });
+    assert.equal(login.status, 200);
+    assert.equal(login.data.newUser, false);
+  });
+
+  it('troca a senha, derruba os logins antigos e a nova passa a valer', async () => {
+    const player = await loggedIn('troca_senha', 'antiga');
+    const admin = await loggedIn('admin', 'senha-admin');
+    const id = db.prepare("SELECT id FROM users WHERE username = 'troca_senha'").get().id;
+
+    const res = await admin('PUT', `/api/admin/users/${id}`, { password: 'nova123' });
+    assert.equal(res.status, 200);
+    assert.equal(res.data.user.legacyPassword, false);
+    assert.equal((await player('GET', '/api/me')).data.user, null, 'sessão antiga derrubada');
+    assert.equal((await client(baseUrl)('POST', '/api/login', { username: 'troca_senha', password: 'antiga' })).status, 401);
+    assert.equal((await client(baseUrl)('POST', '/api/login', { username: 'troca_senha', password: 'nova123' })).status, 200);
+  });
+
+  it('senha vazia na edição mantém a atual', async () => {
+    await loggedIn('mantem', 'segredo');
+    const admin = await loggedIn('admin', 'senha-admin');
+    const id = db.prepare("SELECT id FROM users WHERE username = 'mantem'").get().id;
+    await admin('PUT', `/api/admin/users/${id}`, { username: 'mantem2', password: '' });
+    assert.equal((await client(baseUrl)('POST', '/api/login', { username: 'mantem2', password: 'segredo' })).status, 200);
+  });
+
+  it('renomeia, promove a admin e protege a conta admin principal', async () => {
+    await loggedIn('promovido', 'abc');
+    const admin = await loggedIn('admin', 'senha-admin');
+    const id = db.prepare("SELECT id FROM users WHERE username = 'promovido'").get().id;
+    const adminId = db.prepare("SELECT id FROM users WHERE username = 'admin'").get().id;
+
+    const promoted = await admin('PUT', `/api/admin/users/${id}`, { username: 'Gerente', isAdmin: true });
+    assert.equal(promoted.data.user.username, 'Gerente');
+    assert.equal(promoted.data.user.isAdmin, true);
+    assert.equal((await admin('PUT', `/api/admin/users/${id}`, { username: 'NOVATO' })).status, 409);
+
+    assert.equal((await admin('PUT', `/api/admin/users/${adminId}`, { isAdmin: false })).status, 400);
+    assert.equal((await admin('PUT', `/api/admin/users/${adminId}`, { username: 'chefe' })).status, 400);
+    assert.equal((await admin('PUT', '/api/admin/users/99999', { password: 'x' })).status, 404);
+  });
+
+  it('admin trocando a própria senha continua logado', async () => {
+    const admin = await loggedIn('admin', 'senha-admin');
+    const adminId = db.prepare("SELECT id FROM users WHERE username = 'admin'").get().id;
+    assert.equal((await admin('PUT', `/api/admin/users/${adminId}`, { password: 'senha-admin' })).status, 200);
+    assert.equal((await admin('GET', '/api/me')).data.user.username, 'admin');
+  });
+
+  it('mostra as partidas de um jogador', async () => {
+    seedCelebrities(11);
+    const player = await loggedIn('historico_admin');
+    const start = await player('GET', '/api/game/start');
+    const cut = start.data.celebrities[3];
+    await player('POST', '/api/game/winner', { gameId: start.data.gameId, winnerId: cut.id });
+
+    const admin = await loggedIn('admin', 'senha-admin');
+    const id = db.prepare("SELECT id FROM users WHERE username = 'historico_admin'").get().id;
+    const res = await admin('GET', `/api/admin/users/${id}/games`);
+    assert.equal(res.data.total, 1);
+    assert.equal(res.data.games[0].name, cut.name);
+    assert.ok(res.data.games[0].image_url);
+
+    const list = (await admin('GET', '/api/admin/users')).data.users.find(u => u.id === id);
+    assert.equal(list.games, 1);
+    assert.ok(list.lastPlayed);
+  });
+});
+
+describe('admin: renomear personalidade', () => {
+  it('renomeia e recusa nome de outra já cadastrada', async () => {
+    seedCelebrities(3);
+    const admin = await loggedIn('admin', 'senha-admin');
+    const [a, b] = db.prepare('SELECT id, name FROM celebrities ORDER BY id').all();
+
+    const res = await admin('PUT', `/api/admin/celebrity/${a.id}/name`, { name: '  Nome   Novo ' });
+    assert.equal(res.status, 200);
+    assert.equal(res.data.name, 'Nome Novo');
+    assert.equal(db.prepare('SELECT name FROM celebrities WHERE id = ?').get(a.id).name, 'Nome Novo');
+
+    assert.equal((await admin('PUT', `/api/admin/celebrity/${a.id}/name`, { name: b.name.toUpperCase() })).status, 409);
+    assert.equal((await admin('PUT', `/api/admin/celebrity/${a.id}/name`, { name: 'nome novo' })).status, 200, 'pode mudar só maiúsculas do próprio nome');
+    assert.equal((await admin('PUT', `/api/admin/celebrity/${a.id}/name`, { name: '' })).status, 400);
+
+    const player = await loggedIn('sem_permissao');
+    assert.equal((await player('PUT', `/api/admin/celebrity/${a.id}/name`, { name: 'X' })).status, 403);
+  });
+});
+
 describe('páginas e segurança', () => {
   it('serve as páginas com CSP sem script inline', async () => {
     const res = await fetch(`${baseUrl}/game`);
@@ -316,6 +447,35 @@ describe('páginas e segurança', () => {
 });
 
 describe('migração', () => {
+  it('junta contas que só mudam em maiúsculas, mantendo a com mais maiúsculas', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'c2k-'));
+    const dbPath = path.join(dir, 'duplicados.db');
+
+    const legacy = new DatabaseSync(dbPath);
+    legacy.exec(`
+      CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, is_admin INTEGER DEFAULT 0);
+      CREATE TABLE celebrities (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, image_url TEXT NOT NULL, wins INTEGER DEFAULT 0);
+      CREATE TABLE game_history (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, winner_id INTEGER NOT NULL, played_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+      INSERT INTO users (username, password, is_admin) VALUES ('admin', 'admin', 1);
+      INSERT INTO users (username, password) VALUES ('Teste', 'a'), ('teste', 'b'), ('david', 'c'), ('David', 'd'), ('sozinho', 'e');
+      INSERT INTO celebrities (name, image_url) VALUES ('X', 'https://a.com/x.jpg');
+      INSERT INTO game_history (user_id, winner_id) VALUES (2, 1), (3, 1), (3, 1), (4, 1), (5, 1), (5, 1), (6, 1);
+    `);
+    legacy.close();
+
+    const migrated = openDatabase(dbPath);
+    const users = migrated.prepare('SELECT id, username, password FROM users ORDER BY id').all();
+    assert.deepEqual(users.map(u => u.username), ['admin', 'Teste', 'David', 'sozinho']);
+
+    const gamesOf = name => migrated.prepare('SELECT COUNT(*) AS n FROM game_history gh JOIN users u ON u.id = gh.user_id WHERE u.username = ?').get(name).n;
+    assert.equal(gamesOf('Teste'), 3, '1 do Teste + 2 do teste');
+    assert.equal(gamesOf('David'), 3, '1 do david + 2 do David');
+    assert.equal(migrated.prepare('SELECT password FROM users WHERE username = ?').get('David').password, 'd', 'fica a senha da conta mantida');
+    assert.throws(() => migrated.prepare("INSERT INTO users (username, password) VALUES ('SOZINHO', 'x')").run(), /UNIQUE/);
+    migrated.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
   it('converte um banco v1 mantendo os dados e cria backup', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'c2k-'));
     const dbPath = path.join(dir, 'legado.db');

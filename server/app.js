@@ -1,6 +1,7 @@
 import path from 'node:path';
 import express from 'express';
 import { loadUser } from './auth.js';
+import { adminUserRoutes } from './routes/admin-users.js';
 import { adminRoutes } from './routes/admin.js';
 import { authRoutes } from './routes/auth.js';
 import { gameRoutes } from './routes/game.js';
@@ -17,6 +18,7 @@ export function createApp({ db, publicDir, imagesDir, celebrityImages, searchIma
   app.use(loadUser(db));
 
   app.use('/api', authRoutes(db));
+  app.use('/api/admin/users', adminUserRoutes(db));
   app.use('/api/admin', adminRoutes(db, { searchImages, celebrityImages }));
   app.use('/api/game', gameRoutes(db));
   app.use('/api/ranking', rankingRoutes(db));

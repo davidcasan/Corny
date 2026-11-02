@@ -67,6 +67,8 @@ npm test           # roda os testes
 
 **Admin:** entre como `admin`. Busque nomes (vários separados por `;`), troque a imagem entre as opções encontradas e clique em **Adicionar**. Ou use a adição manual com URL ou arquivo. Nomes repetidos são recusados (ignorando acentos e maiúsculas). Excluir uma celebridade a tira dos sorteios e do ranking, mas preserva o histórico de quem já jogou.
 
+**Jogadores (aba do admin):** lista todos com partidas e última partida, cria jogador, edita nome, senha e acesso ao admin, e mostra o histórico de cada um. As senhas ficam criptografadas: dá para definir uma nova, não para ver a atual. Em **Personalidades**, cada cadastrada tem **Renomear**, **Enquadrar** e **Excluir**.
+
 **Enquadramento:** na lista de cadastradas, **🎯 Enquadrar** abre a foto inteira. Clique no rosto e, se a pessoa estiver pequena na foto, aumente o zoom (até 3×). As prévias mostram na hora como fica no duelo e no ranking. Os selos na lista indicam o que vale trocar: **⚠️ link externo** (o site não deixou baixar a imagem; passe o mouse para ver o motivo) e **📉 imagem pequena** (menos de 400 px, pode ficar borrada).
 
 ---
@@ -130,7 +132,12 @@ Todas as rotas respondem `{ success, ... }`. Em caso de erro: `{ success: false,
 | POST | `/api/admin/add-celebrity` | admin | `{ name, imageUrl }` |
 | GET | `/api/admin/celebrities` | admin | Lista as ativas |
 | PUT | `/api/admin/celebrity/:id/focal` | admin | `{ x, y, zoom }`: ponto em % da imagem e zoom de 1 a 3 |
+| PUT | `/api/admin/celebrity/:id/name` | admin | `{ name }`: renomeia (recusa nome de outra cadastrada) |
 | DELETE | `/api/admin/celebrity/:id` | admin | Exclusão lógica |
+| GET | `/api/admin/users` | admin | Jogadores com nº de partidas, última partida e se a senha ainda é da versão antiga (a senha nunca sai na resposta) |
+| POST | `/api/admin/users` | admin | `{ username, password, isAdmin }`: cria jogador |
+| PUT | `/api/admin/users/:id` | admin | `{ username?, password?, isAdmin? }`: senha vazia mantém a atual; senha nova derruba os outros logins da conta. A conta `admin` principal não pode ser renomeada nem perder o acesso |
+| GET | `/api/admin/users/:id/games` | admin | Partidas do jogador: quem foi cortado e quando (últimas 500) |
 
 ---
 

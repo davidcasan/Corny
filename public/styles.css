@@ -188,6 +188,11 @@ button:disabled {
   opacity: 0.6;
 }
 
+.btn-secondary:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+}
+
 .btn-success {
   background: var(--cyan);
   color: var(--ink);
@@ -837,7 +842,7 @@ label,
 .celebrity-card h3 {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 1.45rem;
+  font-size: 1.75rem;
   line-height: 1.1;
   color: var(--yellow);
   text-shadow: 2px 2px 0 var(--line);
@@ -1135,7 +1140,7 @@ label,
   margin-top: 40px;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 2rem;
+  font-size: 2.4rem;
   color: var(--yellow);
   text-shadow: 3px 3px 0 var(--line);
 }
@@ -1410,7 +1415,7 @@ label,
 
 .ranking-name {
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1767,6 +1772,177 @@ label,
   margin-top: 20px;
 }
 
+/* Abas do admin (Personalidades / Jogadores) */
+.admin-tabs {
+  margin-bottom: 22px;
+}
+
+/* Jogadores */
+.new-user-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.check-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--pink);
+}
+
+.field-help {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+}
+
+.users-toolbar {
+  max-width: 360px;
+}
+
+.users-list {
+  display: grid;
+  gap: 10px;
+  max-height: 620px;
+  overflow-y: auto;
+  margin-top: 14px;
+  padding: 4px 10px 10px 4px;
+}
+
+.user-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "main actions" "meta actions";
+  align-items: center;
+  gap: 4px 14px;
+  padding: 12px 14px;
+  border: var(--border);
+  border-radius: var(--radius-m);
+  background: var(--panel-2);
+  box-shadow: 3px 3px 0 var(--line);
+}
+
+.user-main {
+  grid-area: main;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.user-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  overflow-wrap: anywhere;
+}
+
+.user-meta {
+  grid-area: meta;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+.user-actions {
+  grid-area: actions;
+  display: flex;
+  gap: 8px;
+}
+
+.user-actions .btn-small {
+  width: auto;
+}
+
+.pill {
+  padding: 1px 9px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.pill-cyan {
+  background: var(--cyan);
+}
+
+.pill-yellow {
+  background: var(--yellow);
+  cursor: help;
+}
+
+/* Janelas de formulário e de histórico */
+.modal-dialog {
+  width: min(520px, calc(100vw - 32px));
+}
+
+.modal-form {
+  display: grid;
+  gap: 14px;
+}
+
+.history-list {
+  display: grid;
+  gap: 8px;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 6px;
+  list-style: none;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px 6px 6px;
+  border: 2px solid var(--panel-3);
+  border-radius: 12px;
+  background: #13052f;
+}
+
+.history-thumb {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+}
+
+.history-info {
+  display: grid;
+  min-width: 0;
+}
+
+.history-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-date {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ==================== TELAS PEQUENAS ==================== */
 
 @media (max-width: 640px) {
@@ -1866,7 +2042,7 @@ label,
   }
 
   .celebrity-card h3 {
-    font-size: 1.05rem;
+    font-size: 1.3rem;
     text-shadow: 1px 1px 0 var(--line);
   }
 
@@ -1896,6 +2072,16 @@ label,
 
   .search-form {
     flex-direction: column;
+  }
+
+  .new-user-form {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .user-row {
+    grid-template-columns: 1fr;
+    grid-template-areas: "main" "meta" "actions";
   }
 
   .panel {
